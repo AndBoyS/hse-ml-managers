@@ -1,4 +1,3 @@
-import asyncio
 import atexit
 import functools
 import json
@@ -6,15 +5,21 @@ import os
 import pickle
 import random
 import uuid
-from collections.abc import Iterator
+from collections.abc import Iterable, Iterator
 from pathlib import Path
-from typing import Literal
 
+import numpy as np
 import pandas as pd
 import requests
 from tqdm import tqdm
 
-CACHE_PATH_ESSAY = Path(__file__).parent / "default_llm_essay_feats.pkl"
+CUR_DIR = Path(__file__).parent
+DATA_DIR = CUR_DIR / "data"
+
+INPUT_PATH = DATA_DIR / "original/Loan_Default.csv"
+OUTPUT_PATH = DATA_DIR / "Loan_Default_with_llm_feats.csv"
+CACHE_PATH_ESSAY = DATA_DIR / "llm_essay_feats.pkl"
+SYNONYMS_PATH = DATA_DIR / "word_synonyms.json"
 MAX_REQUEST_TRIES = 10
 
 PROMPT_TEMPLATE_ESSAY = """You will be given a list of bank clients' data with different attributes.
@@ -81,46 +86,50 @@ class Cache:
         return len(self.cache)
 
 
-def first_preprocess() -> pd.DataFrame:
-    df_path = Path(__file__).parent / "data/Loan_Default.csv"
-    NUM_ROWS = 3
+def preprocess() -> pd.DataFrame:
+    NUM_ROWS = 10000
     COLS_TO_REMOVE = ["rate_of_interest", "Interest_rate_spread"]
-    df = pd.read_csv(df_path)
+    df = pd.read_csv(INPUT_PATH)
     df = df.drop(columns=COLS_TO_REMOVE)
     df = df.sample(NUM_ROWS, random_state=42, replace=False)
     rd = random.Random()
     rd.seed(42)
     df["ID"] = [str(uuid.UUID(int=rd.getrandbits(128), version=4)) for _ in range(df.shape[0])]
+    df = df.set_index("ID")
+
+    income_mapping = {0.33: "low", 0.66: "medium", 1.0: "high"}
+    df["income"] = map_floats_to_words(df["income"], quantile_mapping=income_mapping)
+
+    # Upfront charges
+    upfront_mapping = {0: "none", 0.33: "small", 0.66: "medium", 1.0: "high"}
+    df["Upfront_charges"] = map_floats_to_words(df["Upfront_charges"], quantile_mapping=upfront_mapping)
+
+    with SYNONYMS_PATH.open() as f:
+        synonyms_dict: dict[str, list[str]] = json.load(f)
+    new_vals: list[str] = []
+    rng = random.Random(42)
+    for val in df["Upfront_charges"]:
+        if not isinstance(val, str):
+            val = "none"
+        new_vals.append(rng.choice(synonyms_dict[val]))
+    df["Upfront_charges"] = new_vals
+
     return df
 
 
-def preprocess_for_essay_prompt(df: pd.DataFrame) -> pd.DataFrame:
-    def map_quantile(value: float, mapping: dict[float, float]) -> Literal["low", "medium", "high"]:
-        if value <= mapping[0.33]:
-            return "low"
-        elif value <= mapping[0.66]:
-            return "medium"
-        else:
-            return "high"
+def map_floats_to_words(x: pd.Series, quantile_mapping: dict[float, str]) -> pd.Series:  # type: ignore[type-arg]
+    def map_quantile(value: float, threshs: Iterable[float], names: Iterable[str]) -> str | float:
+        if np.isnan(value):
+            return value
+        for thresh, name in zip(threshs, names):
+            if value <= thresh:
+                return name
+        raise ValueError
 
-    def categorize_income(df: pd.DataFrame) -> pd.DataFrame:
-        df = df.copy()
-
-        quantiles_to_use = [0.33, 0.66, 1.0]
-        quantiles = df["income"].quantile(quantiles_to_use)
-        mapping = {k: v for k, v in zip(quantiles_to_use, quantiles)}
-        df["income"] = df["income"].apply(functools.partial(map_quantile, mapping=mapping))
-        return df
-
-    df = df.set_index("ID")
-    COLS_TO_USE = [
-        "approv_in_adv",
-        "Gender",
-        "income",
-        "Status",
-    ]
-    df = categorize_income(df)
-    return df[COLS_TO_USE]
+    quantiles = list(quantile_mapping)
+    names = list(quantile_mapping.values())
+    threshs = x.quantile(quantiles)
+    return x.apply(functools.partial(map_quantile, threshs=threshs, names=names))
 
 
 def create_essay_prompt(df: pd.DataFrame) -> str:
@@ -180,14 +189,22 @@ def collect_essays(df: pd.DataFrame, cache: Cache) -> None:
             print("Skipped batch")
 
 
-async def main() -> None:
-    df = first_preprocess()
-    df.to_csv(Path(__file__).parent / "incomplete_data.csv", index=False)
-    df = preprocess_for_essay_prompt(df)
+def add_essays_to_df(df: pd.DataFrame, cache: Cache) -> None:
+    essay_col = "essay"
+    df[essay_col] = np.nan
+    df[essay_col] = df[essay_col].astype(object)
 
+    for i, line in cache.cache.items():
+        df.loc[i, essay_col] = line
+
+
+def main() -> None:
+    df = preprocess()
     cache = Cache(CACHE_PATH_ESSAY)
     collect_essays(df=df, cache=cache)
+    add_essays_to_df(df=df, cache=cache)
+    df.to_csv(OUTPUT_PATH, index=False)
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
