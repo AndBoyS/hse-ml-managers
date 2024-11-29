@@ -1,22 +1,23 @@
 import asyncio
 import atexit
 import functools
+import json
+import os
 import pickle
 import random
 import uuid
 from collections.abc import Iterator
 from pathlib import Path
+from typing import Literal
 
-import duck_chat
 import pandas as pd
-from aiohttp import client_exceptions
-from duck_chat.exceptions import DuckChatException
+import requests
 from tqdm import tqdm
 
-CACHE_PATH = Path(__file__).parent / "default_llm_essay_feats.pkl"
+CACHE_PATH_ESSAY = Path(__file__).parent / "default_llm_essay_feats.pkl"
 MAX_REQUEST_TRIES = 10
 
-PROMPT_TEMPLATE = """You will be given a list of bank clients' data with different attributes.
+PROMPT_TEMPLATE_ESSAY = """You will be given a list of bank clients' data with different attributes.
 For each client, write a 50-word text from client's point of view, as if he is introducing himself to a bank employee.
 Some info and instructions you need to keep in mind:
 - if "income" attribute equals medium, that means client has a stable job, if income is high, then client is rich
@@ -80,9 +81,9 @@ class Cache:
         return len(self.cache)
 
 
-def preprocess() -> pd.DataFrame:
+def first_preprocess() -> pd.DataFrame:
     df_path = Path(__file__).parent / "data/Loan_Default.csv"
-    NUM_ROWS = 10000
+    NUM_ROWS = 3
     COLS_TO_REMOVE = ["rate_of_interest", "Interest_rate_spread"]
     df = pd.read_csv(df_path)
     df = df.drop(columns=COLS_TO_REMOVE)
@@ -93,8 +94,8 @@ def preprocess() -> pd.DataFrame:
     return df
 
 
-def preprocess_for_prompt(df: pd.DataFrame) -> pd.DataFrame:
-    def map_quantile(value: float, mapping: dict[float, float]):
+def preprocess_for_essay_prompt(df: pd.DataFrame) -> pd.DataFrame:
+    def map_quantile(value: float, mapping: dict[float, float]) -> Literal["low", "medium", "high"]:
         if value <= mapping[0.33]:
             return "low"
         elif value <= mapping[0.66]:
@@ -122,9 +123,9 @@ def preprocess_for_prompt(df: pd.DataFrame) -> pd.DataFrame:
     return df[COLS_TO_USE]
 
 
-def create_prompt(df: pd.DataFrame) -> str:
+def create_essay_prompt(df: pd.DataFrame) -> str:
     info = "\n".join([row.to_json() for _, row in df.iterrows()])
-    return PROMPT_TEMPLATE.replace("{info}", str(info))
+    return PROMPT_TEMPLATE_ESSAY.replace("{info}", str(info))
 
 
 def iter_batch(df: pd.DataFrame, batch_size: int = 10) -> Iterator[pd.DataFrame]:
@@ -132,47 +133,60 @@ def iter_batch(df: pd.DataFrame, batch_size: int = 10) -> Iterator[pd.DataFrame]
         yield df.iloc[i : i + batch_size]
 
 
-def save_response(df: pd.DataFrame, resp: str, cache: Cache) -> None:
+def ask_question(prompt: str) -> list[str]:
+    url = "https://api.proxyapi.ru/openai/v1/chat/completions"
+    headers = {"Content-Type": "application/json", "Authorization": f"Bearer {os.environ['OPENAI_API_KEY']}"}
+    data = {"model": "gpt-4o-mini", "messages": [{"role": "user", "content": prompt}]}
+    response = requests.post(url, headers=headers, data=json.dumps(data))
+
+    if response.status_code == 200:
+        return [d["message"]["content"] for d in response.json()["choices"]]
+
+    raise requests.RequestException(response.status_code, response.text)
+
+
+def try_ask_question_and_save(batch: pd.DataFrame, prompt: str, cache: Cache) -> bool:
+    resp = ask_question(prompt)[0]
+    return save_response(df=batch, resp=resp, cache=cache)
+
+
+def save_response(df: pd.DataFrame, resp: str, cache: Cache) -> bool:
     resp_list = [line for line in resp.splitlines() if line.startswith('"') and line.endswith("")]
     if len(resp_list) != df.shape[0]:
-        raise ValueError
-
+        return False
     for i, line in zip(df.index, resp_list):
+        print(line)
         cache.add_new_el(k=i, v=line)
+    return True
 
 
-async def main():
-    df = preprocess()
-    df.to_csv(Path(__file__).parent / "incomplete_data.csv", index=False)
-    df = preprocess_for_prompt(df)
-
-    cache = Cache(CACHE_PATH)
-
+def collect_essays(df: pd.DataFrame, cache: Cache) -> None:
     not_done_idx = [i for i in df.index if i not in cache.cache]
     df = df.loc[not_done_idx]
 
     for batch in tqdm(list(iter_batch(df))):
-        async with duck_chat.DuckChat(model=duck_chat.ModelType.GPT4o) as chat:
-            prompt = create_prompt(batch)
-            batch_done = False
-            for _ in range(MAX_REQUEST_TRIES):
-                try:
-                    resp = await chat.ask_question(prompt)
-                    save_response(df=batch, resp=resp, cache=cache)
-                except (
-                    ValueError,
-                    DuckChatException,
-                    client_exceptions.ClientPayloadError,
-                    client_exceptions.ServerDisconnectedError,
-                ) as e:
-                    print(e)
-                    continue
-                else:
+        prompt = create_essay_prompt(batch)
+        batch_done = False
+
+        for _ in range(MAX_REQUEST_TRIES):
+            try:
+                if try_ask_question_and_save(batch=batch, prompt=prompt, cache=cache):
                     batch_done = True
                     break
+            except requests.RequestException as e:
+                print(e)
 
-            if not batch_done:
-                print("Skipped batch")
+        if not batch_done:
+            print("Skipped batch")
+
+
+async def main() -> None:
+    df = first_preprocess()
+    df.to_csv(Path(__file__).parent / "incomplete_data.csv", index=False)
+    df = preprocess_for_essay_prompt(df)
+
+    cache = Cache(CACHE_PATH_ESSAY)
+    collect_essays(df=df, cache=cache)
 
 
 if __name__ == "__main__":
