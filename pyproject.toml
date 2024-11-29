@@ -3,6 +3,8 @@ line-length = 120
 
 [tool.mypy]
 strict = true
+allow_redefinition = true
+no_implicit_reexport = false
 
 [project]
 name = "hse-ml-managers"
@@ -22,6 +24,7 @@ dependencies = [
     "scikit-learn>=1.5.2",
     "seaborn>=0.13.2",
     "tqdm>=4.67.1",
+    "transformers>=4.46.3",
     "types-requests>=2.32.0.20241016",
     "types-tqdm>=4.67.0.20241119",
 ]
