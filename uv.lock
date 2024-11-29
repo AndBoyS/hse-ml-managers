@@ -492,6 +492,8 @@ dependencies = [
     { name = "scikit-learn" },
     { name = "seaborn" },
     { name = "tqdm" },
+    { name = "types-requests" },
+    { name = "types-tqdm" },
 ]
 
 [package.metadata]
@@ -507,6 +509,8 @@ requires-dist = [
     { name = "scikit-learn", specifier = ">=1.5.2" },
     { name = "seaborn", specifier = ">=0.13.2" },
     { name = "tqdm", specifier = ">=4.67.1" },
+    { name = "types-requests", specifier = ">=2.32.0.20241016" },
+    { name = "types-tqdm", specifier = ">=4.67.0.20241119" },
 ]
 
 [[package]]
@@ -1989,6 +1993,30 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/66/d0/73aa3063a9ef9881bd7103cb4ae379bfd8fafda0e86b01b694d676313a4b/types-pytz-2024.2.0.20241003.tar.gz", hash = "sha256:575dc38f385a922a212bac00a7d6d2e16e141132a3c955078f4a4fd13ed6cb44", size = 5474 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/86/60/2a2977ce0f91255bbb668350b127a801a06ad37c326a2e5bfd52f03e0784/types_pytz-2024.2.0.20241003-py3-none-any.whl", hash = "sha256:3e22df1336c0c6ad1d29163c8fda82736909eb977281cb823c57f8bae07118b7", size = 5245 },
+]
+
+[[package]]
+name = "types-requests"
+version = "2.32.0.20241016"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "urllib3" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/fa/3c/4f2a430c01a22abd49a583b6b944173e39e7d01b688190a5618bd59a2e22/types-requests-2.32.0.20241016.tar.gz", hash = "sha256:0d9cad2f27515d0e3e3da7134a1b6f28fb97129d86b867f24d9c726452634d95", size = 18065 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d7/01/485b3026ff90e5190b5e24f1711522e06c79f4a56c8f4b95848ac072e20f/types_requests-2.32.0.20241016-py3-none-any.whl", hash = "sha256:4195d62d6d3e043a4eaaf08ff8a62184584d2e8684e9d2aa178c7915a7da3747", size = 15836 },
+]
+
+[[package]]
+name = "types-tqdm"
+version = "4.67.0.20241119"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "types-requests" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/1f/ec/99fcd02f1cf22fd4eda1579b179907e9cd98751202dd7b29050a509aeb53/types-tqdm-4.67.0.20241119.tar.gz", hash = "sha256:1769e0e94d5e6d8fa814965f9cf3d9928376dd15dabcbcb784bb8769081092b4", size = 12180 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/46/91/aa2fe3331f8544c8995a4c5ac9fa1974b67e548a91d2d91463054914a7bf/types_tqdm-4.67.0.20241119-py3-none-any.whl", hash = "sha256:a18d4eb62db0d35c52707ae13d821b5a57970755273ecb56e133ccc0ac7e7c79", size = 19379 },
 ]
 
 [[package]]

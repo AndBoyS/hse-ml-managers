@@ -1,6 +1,9 @@
 [tool.ruff]
 line-length = 120
 
+[tool.mypy]
+strict = true
+
 [project]
 name = "hse-ml-managers"
 version = "0.1.0"
@@ -19,4 +22,6 @@ dependencies = [
     "scikit-learn>=1.5.2",
     "seaborn>=0.13.2",
     "tqdm>=4.67.1",
+    "types-requests>=2.32.0.20241016",
+    "types-tqdm>=4.67.0.20241119",
 ]
