@@ -86,11 +86,79 @@ class Cache:
         return len(self.cache)
 
 
+def random_nan_placement(df: pd.DataFrame, rate: float, seed: int = 1, exclude: list[str] | None = None) -> None:
+    np.random.seed(seed)
+    num_cols = list(df.select_dtypes(exclude=object).columns)
+
+    if exclude:
+        for el in exclude:
+            num_cols.remove(el)
+
+    idx: list[tuple[int, str]] = []
+    for col in num_cols:
+        for i in df[col].dropna().index:
+            idx.append((i, col))
+
+    num_nans = int(len(idx) * rate)
+
+    idx_cont = range(len(idx))
+    nan_idx_cont = np.random.choice(idx_cont, replace=False, size=(num_nans,))
+    nan_idx = [idx[i] for i in nan_idx_cont]
+
+    for i in nan_idx:
+        df.loc[*i] = np.nan
+
+
+def rename_cols(df: pd.DataFrame) -> pd.DataFrame:
+    return df.rename(
+        columns={
+            "loan_limit": "лимит_нарушен",
+            "Gender": "пол",
+            "loan_type": "тип",
+            "loan_purpose": "цель",
+            "Credit_Worthiness": "кредитоспособность",
+            "open_credit": "другие_кредиты",
+            "business_or_commercial": "бизнес",
+            "loan_amount": "сумма",
+            "Upfront_charges": "сбор",
+            "term": "срок",
+            "Neg_ammortization": "амортизация",
+            "interest_only": "только_процент",
+            "lump_sum_payment": "один_платеж",
+            "property_value": "стоимость_имущества",
+            "occupancy_type": "работа",
+            "Secured_by": "тип_залога",
+            "credit_type": "тип_кредита",
+            "Credit_Score": "кредитный_рейтинг",
+            "age": "возраст",
+            "Security_Type": "прямой_залог",
+            "Status": "дефолт",
+            "essay": "речь",
+        }
+    )
+
+
+def drop_cols(df: pd.DataFrame) -> pd.DataFrame:
+    COLS_TO_REMOVE = [
+        "rate_of_interest",
+        "Interest_rate_spread",
+        "approv_in_adv",
+        "Region",
+        "total_units",
+        "income",
+        "LTV",
+        "dtir1",
+        "year",
+        "construction_type",
+        "co-applicant_credit_type",
+        "submission_of_application",
+    ]
+    return df.drop(columns=COLS_TO_REMOVE)
+
+
 def preprocess() -> pd.DataFrame:
     NUM_ROWS = 10000
-    COLS_TO_REMOVE = ["rate_of_interest", "Interest_rate_spread"]
     df = pd.read_csv(INPUT_PATH)
-    df = df.drop(columns=COLS_TO_REMOVE)
     df = df.sample(NUM_ROWS, random_state=42, replace=False)
     rd = random.Random()
     rd.seed(42)
@@ -114,6 +182,32 @@ def preprocess() -> pd.DataFrame:
         new_vals.append(rng.choice(synonyms_dict[val]))
     df["Upfront_charges"] = new_vals
 
+    num_cols = df.select_dtypes(exclude=object).columns
+    stds = df[num_cols].std()
+    for col in num_cols:
+        if col == "Status":
+            continue
+        df[col] += stds[col] * 0.1
+
+    df["occupancy_type"] = df["occupancy_type"].map({"pr": "осн", "sr": "втор", "ir": "инвест"})
+    df["Secured_by"] = df["Secured_by"].map({"land": "земля", "home": "дом"})
+    df["credit_type"] = df["credit_type"].map({"CIB": 1, "CRIF": 2, "EXP": 3, "EQUI": 4})
+    df["loan_limit"] = df["loan_limit"] == "ncf"
+    df["loan_purpose"] = 4 - df["loan_purpose"].str[1].astype(float)
+    df["loan_type"] = 4 - df["loan_type"].str[-1].astype(float)
+    df["Credit_Worthiness"] = 2 - df["Credit_Worthiness"].str[1].astype(float)
+    df["open_credit"] = df["open_credit"] == "opc"
+    df["business_or_commercial"] = df["business_or_commercial"] == "b/c"
+    df["Neg_ammortization"] = df["Neg_ammortization"] == "neg_amm"
+    df["interest_only"] = df["interest_only"] == "int_only"
+    df["lump_sum_payment"] = df["lump_sum_payment"] == "lpsm"
+    df["Security_Type"] = df["Security_Type"] == "direct"
+    df["Gender"] = df["Gender"].map({"Female": "ж", "Male": "м", "Sex Not Available": "n/a"})
+
+    bool_cols = df.select_dtypes(bool).columns
+    df[bool_cols] = df[bool_cols].astype(float)
+
+    random_nan_placement(df, rate=0.2, seed=4, exclude=["Status"])
     return df
 
 
@@ -203,6 +297,8 @@ def main() -> None:
     cache = Cache(CACHE_PATH_ESSAY)
     collect_essays(df=df, cache=cache)
     add_essays_to_df(df=df, cache=cache)
+    df = rename_cols(df)
+    df = drop_cols(df)
     df.to_csv(OUTPUT_PATH, index=False)
 
 
