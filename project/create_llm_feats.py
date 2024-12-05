@@ -11,13 +11,18 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import requests
+from sklearn.model_selection import train_test_split
 from tqdm import tqdm
 
 CUR_DIR = Path(__file__).parent
 DATA_DIR = CUR_DIR / "data"
 
 INPUT_PATH = DATA_DIR / "original/Loan_Default.csv"
-OUTPUT_PATH = DATA_DIR / "Loan_Default_with_llm_feats.csv"
+
+OUTPUT_TRAIN = DATA_DIR / "train.csv"
+OUTPUT_TEST_PUBLIC = DATA_DIR / "test_public.csv"
+OUTPUT_TEST_PUBLIC_NO_ANS = DATA_DIR / "test_public_no_answers.csv"
+OUTPUT_TEST_PRIVATE = DATA_DIR / "test_private.csv"
 CACHE_PATH_ESSAY = DATA_DIR / "llm_essay_feats.pkl"
 SYNONYMS_PATH = DATA_DIR / "word_synonyms.json"
 MAX_REQUEST_TRIES = 10
@@ -299,7 +304,14 @@ def main() -> None:
     add_essays_to_df(df=df, cache=cache)
     df = rename_cols(df)
     df = drop_cols(df)
-    df.to_csv(OUTPUT_PATH, index=False)
+
+    df_train, df_test = train_test_split(df, test_size=0.2, random_state=42)
+    df_test_public, df_test_private = train_test_split(df_test, test_size=0.5, random_state=42)
+
+    df_train.to_csv(OUTPUT_TRAIN, index=False)
+    df_test_public.to_csv(OUTPUT_TEST_PUBLIC, index=False)
+    df_test_public.drop(columns="дефолт").to_csv(OUTPUT_TEST_PUBLIC_NO_ANS, index=False)
+    df_test_private.to_csv(OUTPUT_TEST_PRIVATE, index=False)
 
 
 if __name__ == "__main__":
