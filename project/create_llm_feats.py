@@ -19,10 +19,11 @@ DATA_DIR = CUR_DIR / "data"
 
 INPUT_PATH = DATA_DIR / "original/Loan_Default.csv"
 
-OUTPUT_TRAIN = DATA_DIR / "train.csv"
-OUTPUT_TEST_PUBLIC = DATA_DIR / "test_public.csv"
-OUTPUT_TEST_PUBLIC_NO_ANS = DATA_DIR / "test_public_no_answers.csv"
-OUTPUT_TEST_PRIVATE = DATA_DIR / "test_private.csv"
+KAGGLE_DIR = DATA_DIR / "kaggle"
+OUTPUT_TRAIN = KAGGLE_DIR / "train.csv"
+OUTPUT_TEST_TARGETS = KAGGLE_DIR / "test_targets.csv"
+OUTPUT_TEST_FEAT = KAGGLE_DIR / "test_feat.csv"
+OUTPUT_SUBMIT_EXAMPLE = KAGGLE_DIR / "submission_example.csv"
 CACHE_PATH_ESSAY = DATA_DIR / "llm_essay_feats.pkl"
 SYNONYMS_PATH = DATA_DIR / "word_synonyms.json"
 MAX_REQUEST_TRIES = 10
@@ -308,10 +309,20 @@ def main() -> None:
     df_train, df_test = train_test_split(df, test_size=0.2, random_state=42)
     df_test_public, df_test_private = train_test_split(df_test, test_size=0.5, random_state=42)
 
-    df_train.to_csv(OUTPUT_TRAIN, index=False)
-    df_test_public.to_csv(OUTPUT_TEST_PUBLIC, index=False)
-    df_test_public.drop(columns="дефолт").to_csv(OUTPUT_TEST_PUBLIC_NO_ANS, index=False)
-    df_test_private.to_csv(OUTPUT_TEST_PRIVATE, index=False)
+    OUTPUT_TRAIN.parent.mkdir(exist_ok=True)
+    df_train.to_csv(OUTPUT_TRAIN)
+
+    df_test = pd.concat((df_test_public, df_test_private))
+    df_test.drop(columns="дефолт").to_csv(OUTPUT_TEST_FEAT)
+
+    df_test_public["Usage"] = "Public"
+    df_test_private["Usage"] = "Private"
+    df_target = pd.concat((df_test_public, df_test_private))[["дефолт", "Usage"]]
+    df_target.to_csv(OUTPUT_TEST_TARGETS)
+
+    submit = df_target["дефолт"].copy()
+    submit[:] = np.random.randint(0, 2, size=submit.shape[0])  # type: ignore[call-overload]
+    submit.to_csv(OUTPUT_SUBMIT_EXAMPLE)
 
 
 if __name__ == "__main__":
