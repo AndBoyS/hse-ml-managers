@@ -3,8 +3,20 @@ line-length = 120
 
 [tool.mypy]
 strict = true
+disallow_untyped_calls = false
+disallow_any_generics = false
+disallow_subclassing_any = false
 allow_redefinition = true
 no_implicit_reexport = false
+
+[[tool.mypy.overrides]]
+module = [
+    "sklearn.*",
+    "seaborn.*",
+    "catboost.*",
+    "missingno.*",
+]
+ignore_missing_imports = true
 
 [project]
 name = "hse-ml-managers"
