@@ -349,15 +349,6 @@ wheels = [
 ]
 
 [[package]]
-name = "data-science-types"
-version = "0.2.23"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/ae/5f/6c4888c17fa53c551df740d93806c68f1d5eed6b6167747087415e50dccb/data-science-types-0.2.23.tar.gz", hash = "sha256:8096b9a35a8a187bf9a122b4707c97de841d810744690ee2a4ac30c6462e0d16", size = 35914 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/9f/66/3f48f40f1aaa0508732706271db4285c25977ee0e00d6c3582e2a6ec2f01/data_science_types-0.2.23-py3-none-any.whl", hash = "sha256:bca319abc0e53a0316f9fcb887937e942477cb9e5fc63c8581e0b0438903b977", size = 42682 },
-]
-
-[[package]]
 name = "debugpy"
 version = "1.8.10"
 source = { registry = "https://pypi.org/simple" }
@@ -480,10 +471,9 @@ wheels = [
 [[package]]
 name = "hse-ml-managers"
 version = "0.1.0"
-source = { virtual = "." }
+source = { editable = "." }
 dependencies = [
     { name = "catboost" },
-    { name = "data-science-types" },
     { name = "jupyter" },
     { name = "matplotlib" },
     { name = "missingno" },
@@ -502,7 +492,6 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "catboost", specifier = ">=1.2.7" },
-    { name = "data-science-types", specifier = ">=0.2.23" },
     { name = "jupyter", specifier = ">=1.1.1" },
     { name = "matplotlib", specifier = ">=3.9.2" },
     { name = "missingno", specifier = ">=0.5.2" },
