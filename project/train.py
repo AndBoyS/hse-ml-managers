@@ -1,4 +1,3 @@
-from re import M
 from typing import Any
 
 import pandas as pd
@@ -6,7 +5,7 @@ from catboost import CatBoostClassifier
 from create_llm_feats import OUTPUT_TEST_PRIVATE, OUTPUT_TEST_PUBLIC, OUTPUT_TRAIN
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.impute import SimpleImputer
-from sklearn.linear_model import LinearRegression, LogisticRegression
+from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import f1_score
 from sklearn.pipeline import Pipeline
 
