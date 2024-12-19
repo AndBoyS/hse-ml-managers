@@ -3,7 +3,7 @@ from typing import cast
 import numpy as np
 import pandas as pd
 
-from src.mba.const import NUM_MONTHS, RATE
+from .const import NUM_MONTHS, RATE
 
 arr = np.ndarray | pd.Series
 
