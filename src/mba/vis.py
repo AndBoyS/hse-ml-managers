@@ -1,61 +1,63 @@
-from typing import cast
+from collections.abc import Iterable
 
 import matplotlib.pyplot as plt
+import missingno as msno
 import numpy as np
 import pandas as pd
 import seaborn as sns
-from sklearn.ensemble import IsolationForest
 
 from src.mba.const import TARGET
 
 
-def get_float_cols_for_vis(loan_data: pd.DataFrame) -> list[str]:
-    cols = loan_data.select_dtypes(exclude=object).columns
-    return [c for c in cols if loan_data[c].nunique() >= 20]
-
-
-def get_cat_cols_for_vis(loan_data: pd.DataFrame, for_plot: bool = False) -> list[str]:
-    float_cols = get_float_cols_for_vis(loan_data)
-    cat_cols = list(set(loan_data.columns) - set(float_cols))
-    if for_plot:
-        cat_cols = [c for c in cat_cols if loan_data[c].nunique() < 20]
-    return cat_cols
-
-
-def plot_hist(loan_data: pd.DataFrame) -> None:
-    float_cols = get_float_cols_for_vis(loan_data)
-    loan_data[float_cols].hist(bins=60, figsize=(7, 7))
+def plot_hist(data: pd.DataFrame, cols: list[str], bins: int = 60) -> None:
+    data[cols].hist(bins=bins, figsize=(7, 7))
     plt.suptitle("Распределение числовых признаков")
     plt.show()
 
 
-def plot_scatter(loan_data: pd.DataFrame) -> None:
-    float_cols = get_float_cols_for_vis(loan_data)
-    g = sns.PairGrid(loan_data, x_vars=float_cols, y_vars=float_cols)
+def plot_corr(data: pd.DataFrame, cols: list[str]) -> None:
+    corr = data[cols].corr()
+    mask = np.triu(corr).astype(bool)
+    sns.heatmap(corr, annot=True, mask=mask)
+    plt.title("Корреляционная матрица")
+    plt.show()
+
+
+def plot_scatter(data: pd.DataFrame, cols: list[str]) -> None:
+    g = sns.PairGrid(data, x_vars=cols, y_vars=cols)
     g.map_lower(sns.scatterplot)
     plt.suptitle("Точечные графики числовых признаков")
     plt.tight_layout()
     plt.show()
 
 
-def print_value_counts(loan_data: pd.DataFrame) -> None:
-    cat_cols = get_cat_cols_for_vis(loan_data)
-    for col in cat_cols:
-        print(loan_data[col].value_counts())
+def plot_nan(data: pd.DataFrame) -> None:
+    msno.matrix(data)
+    plt.title("Визуализация пропущенных значений")
+    plt.show()
+    msno.bar(data)
+    plt.title("Распределение пропущенных значений")
+    plt.show()
+    msno.heatmap(data)
+    plt.title("Корреляции между пропущенными значениями")
+    plt.show()
+
+
+def print_value_counts(data: pd.DataFrame, cols: Iterable[str]) -> None:
+    for col in cols:
+        print(data[col].value_counts())
         print()
 
 
-def plot_categorical_distributions(loan_data: pd.DataFrame) -> None:
-    cat_feats = get_cat_cols_for_vis(loan_data, for_plot=True)
+def plot_categorical_distributions(data: pd.DataFrame, cols: list[str]) -> None:
+    n_plot_cols = 2
+    n_plot_rows = (len(cols) + n_plot_cols - 1) // n_plot_cols
 
-    num_cols = 2
-    num_rows = (len(cat_feats) + num_cols - 1) // num_cols
+    plt.figure(figsize=(12, n_plot_rows * 4))
 
-    plt.figure(figsize=(12, num_rows * 4))
-
-    for i, col in enumerate(cat_feats):
-        plt.subplot(num_rows, num_cols, i + 1)
-        sns.countplot(data=loan_data, x=col)
+    for i, col in enumerate(cols):
+        plt.subplot(n_plot_rows, n_plot_cols, i + 1)
+        sns.countplot(data=data, x=col)
         plt.title(f"Распределение {col}")
         plt.xticks(rotation=45)
 
@@ -63,16 +65,15 @@ def plot_categorical_distributions(loan_data: pd.DataFrame) -> None:
     plt.show()
 
 
-def visualize_cat_and_target(loan_data: pd.DataFrame) -> None:
-    cat_feats = get_cat_cols_for_vis(loan_data, for_plot=True)
-    num_cols = 2
-    num_rows = (len(cat_feats) + num_cols - 1) // num_cols
+def visualize_cat_and_target(data: pd.DataFrame, cols: list[str]) -> None:
+    n_plot_cols = 2
+    n_plot_rows = (len(cols) + n_plot_cols - 1) // n_plot_cols
 
-    plt.figure(figsize=(12, num_rows * 4))
-    for i, col in enumerate(cat_feats):
-        plt.subplot(num_rows, num_cols, i + 1)
+    plt.figure(figsize=(12, n_plot_rows * 4))
+    for i, col in enumerate(cols):
+        plt.subplot(n_plot_rows, n_plot_cols, i + 1)
         # fig, ax = plt.subplots(figsize=(3, 2))
-        sns.countplot(x=col, hue=TARGET, data=loan_data)
+        sns.countplot(x=col, hue=TARGET, data=data)
         plt.title(f"Распределение таргета для признака {col}")
         plt.xticks(rotation=45)
 
@@ -80,19 +81,27 @@ def visualize_cat_and_target(loan_data: pd.DataFrame) -> None:
     plt.show()
 
 
-def get_anomaly_mask(loan_data: pd.DataFrame, col: str) -> np.ndarray:
-    model = IsolationForest(contamination=0.05)
-    return cast(np.ndarray, model.fit_predict(loan_data[[col]]) == -1)
+def plot_anomalies(data: pd.DataFrame, cols: list[str], n_bins: int = 100) -> None:
+    for col in cols:
+        col_data = data[col].dropna()
+        mean = col_data.mean()
+        std_dev = col_data.std()
 
+        lower_threshold = mean - 3 * std_dev
+        upper_threshold = mean + 3 * std_dev
 
-def plot_anomalies(loan_data: pd.DataFrame, bins: int = 100) -> None:
-    float_cols = get_float_cols_for_vis(loan_data)
-    for col in float_cols:
-        anomaly_mask = get_anomaly_mask(loan_data, col)
+        counts, bins = np.histogram(col_data, bins=n_bins)
+        colors = [
+            "blue" if (lower_threshold <= (bin_start + bin_end) / 2 <= upper_threshold) else "red"
+            for bin_start, bin_end in zip(bins[:-1], bins[1:])
+        ]
 
         plt.figure(figsize=(10, 6))
-        plt.hist(loan_data[col][~anomaly_mask], bins=bins, alpha=0.5, label="Normal", color="blue")
-        plt.hist(loan_data[col][anomaly_mask], bins=bins, alpha=0.5, label="Anomaly", color="red")
+        plt.bar(bins[:-1], counts, width=np.diff(bins), color=colors, edgecolor="black", align="edge")
+        plt.axvline(mean, color="green", linestyle="dashed", linewidth=1, label="Mean")
+        plt.axvline(lower_threshold, color="orange", linestyle="dashed", linewidth=1, label="-3 Std Dev")
+        plt.axvline(upper_threshold, color="orange", linestyle="dashed", linewidth=1, label="+3 Std Dev")
+
         plt.title(f"Histogram of {col}")
         plt.xlabel(col)
         plt.ylabel("Frequency")
