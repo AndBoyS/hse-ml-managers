@@ -12,6 +12,7 @@ no_implicit_reexport = false
 [[tool.mypy.overrides]]
 module = [
     "sklearn.*",
+    "scipy.*",
     "seaborn.*",
     "catboost.*",
     "missingno.*",
