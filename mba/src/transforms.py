@@ -14,7 +14,7 @@ def remove_anomalies(data: pd.DataFrame, cols: list[str], thresh: int = 3) -> pd
     data = data.copy()
     for col in cols:
         scores = scipy.stats.zscore(data[col], nan_policy="omit")
-        data = data[np.abs(scores) < thresh]
+        data = data[(np.abs(scores) < thresh)]
 
     return data
 

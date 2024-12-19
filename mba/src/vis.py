@@ -43,9 +43,9 @@ def plot_nan(data: pd.DataFrame) -> None:
     plt.show()
 
 
-def print_value_counts(data: pd.DataFrame, cols: Iterable[str]) -> None:
+def print_value_counts(data: pd.DataFrame, cols: Iterable[str], dropna: bool = True) -> None:
     for col in cols:
-        print(data[col].value_counts())
+        print(data[col].value_counts(dropna=dropna))
         print()
 
 

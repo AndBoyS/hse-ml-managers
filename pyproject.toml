@@ -43,3 +43,6 @@ dependencies = [
     "types-requests>=2.32.0.20241016",
     "types-tqdm>=4.67.0.20241119",
 ]
+
+[tool.flake8]
+max-line-length = 119
