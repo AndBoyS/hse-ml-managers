@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 
-from .const import TARGET
+from src.mba.const import TARGET
 
 
 def plot_hist(data: pd.DataFrame, cols: list[str], bins: int = 60) -> None:

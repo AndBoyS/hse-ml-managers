@@ -1,9 +1,10 @@
+
 import numpy as np
 import pandas as pd
 from sklearn.metrics import f1_score
 from sklearn.model_selection import train_test_split
 
-from .const import TARGET
+from src.mba.const import TARGET
 
 
 def get_xy(data: pd.DataFrame) -> tuple[pd.DataFrame, pd.Series]:
