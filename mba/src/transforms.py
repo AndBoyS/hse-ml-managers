@@ -47,6 +47,24 @@ def clip_anomalies(data: pd.DataFrame, cols: list[str], thresh: int = 3) -> pd.D
     return data
 
 
+class PandasTransformer(BaseEstimator, TransformerMixin):
+    def __init__(self, transformer: BaseEstimator, col_names: list[str] | None = None) -> None:
+        self.transformer = transformer
+        self.col_names = col_names
+
+    def fit(self, X: pd.DataFrame, y: pd.Series | None = None) -> Self:
+        self._col_names = self.col_names
+        if self.col_names is None:
+            self._col_names = list(X.columns)
+        self.transformer.fit(X[self._col_names])
+        return self
+
+    def transform(self, X: pd.DataFrame, y: pd.Series | None = None) -> pd.DataFrame:
+        X = X.copy()
+        X[self._col_names] = self.transformer.transform(X[self._col_names])
+        return X
+
+
 class ReorderColumnTransformer(BaseEstimator, TransformerMixin):
     def __init__(self, column_transformer):
         self.column_transformer = column_transformer
