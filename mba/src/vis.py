@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 
-from src.mba.const import TARGET
+from .const import TARGET
 
 
 def plot_hist(data: pd.DataFrame, cols: list[str], bins: int = 60) -> None:
@@ -33,12 +33,12 @@ def plot_scatter(data: pd.DataFrame, cols: list[str]) -> None:
 
 def plot_nan(data: pd.DataFrame) -> None:
     msno.matrix(data)
-    plt.title("Визуализация пропущенных значений")
-    plt.show()
-    msno.bar(data)
-    plt.title("Распределение пропущенных значений")
-    plt.show()
-    msno.heatmap(data)
+    # plt.title("Визуализация пропущенных значений")
+    # plt.show()
+    # msno.bar(data)
+    # plt.title("Распределение пропущенных значений")
+    # plt.show()
+    msno.heatmap(data, vmin=-0.1, vmax=0.1)
     plt.title("Корреляции между пропущенными значениями")
     plt.show()
 
