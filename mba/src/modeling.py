@@ -11,7 +11,7 @@ def get_xy(data: pd.DataFrame) -> tuple[pd.DataFrame, pd.Series]:
 
 
 def get_train_test(data: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
-    df_train, df_test = train_test_split(data, test_size=0.33, random_state=42)
+    df_train, df_test = train_test_split(data, test_size=0.2, random_state=42)
     return df_train, df_test
 
 

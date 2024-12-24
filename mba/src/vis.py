@@ -18,7 +18,7 @@ def plot_hist(data: pd.DataFrame, cols: list[str], bins: int = 60) -> None:
 def plot_corr(data: pd.DataFrame, cols: list[str]) -> None:
     corr = data[cols].corr()
     mask = np.triu(corr).astype(bool)
-    sns.heatmap(corr, annot=True, mask=mask)
+    sns.heatmap(corr, annot=False, mask=mask)
     plt.title("Корреляционная матрица")
     plt.show()
 
