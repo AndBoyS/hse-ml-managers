@@ -1,3 +1,5 @@
+from typing import cast
+
 import numpy as np
 import pandas as pd
 
@@ -43,4 +45,4 @@ def profit(y_true: arr, y_pred: arr, feats: pd.DataFrame) -> float:
     loss = feats[failure_mask.to_list()]["сумма"].fillna(0)
     loss -= feats[failure_mask.to_list()]["стоимость_имущества"].fillna(0)
     profit -= loss.sum()
-    return profit
+    return cast(float, profit)
