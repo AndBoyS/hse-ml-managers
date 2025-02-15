@@ -9,12 +9,10 @@ arr = np.ndarray | pd.Series
 def calculate_interest(start: arr, num_periods: arr, rate: float) -> arr:
     """
     Calculate total interest income for bank from annuity loan
-
     Parameters:
     start (array) - loan amounts
     num_periods (array) - number of months for each loan
     rate (float) - annual interest rate (e.g. 0.12 for 12%)
-
     Returns:
     array - total interest income for each loan
     """
