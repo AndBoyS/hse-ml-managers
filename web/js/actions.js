@@ -1,6 +1,6 @@
 const actionsData = [
   { id: 0, name: "Скачать файл с данными для обучения", prerequisited: [] },
-  { id: 1, name: "Открыть файл в Excel", prerequisited: [0] },
+  // { id: 1, name: "Открыть файл в Excel", prerequisited: [0] },
   { id: 2, name: "Загрузить данные в Pandas", prerequisited: [0] },
   { id: 3, name: "Посмотреть описание столбцов", prerequisited: [2] },
   { id: 4, name: "Удалить столбец", prerequisited: [2] },
@@ -69,21 +69,21 @@ const actionsData = [
     name: "Заполнить пропуски в категориальных столбцах модой",
     prerequisited: [18],
   },
-  {
-    id: 22,
-    name: "Закодировать категориальные признаки при помощи one hot encoding",
-    prerequisited: [18],
-  },
+  // {
+  //   id: 22,
+  //   name: "Закодировать категориальные признаки при помощи one hot encoding",
+  //   prerequisited: [18],
+  // },
   {
     id: 23,
     name: "Разделить предикторы и целевую переменную",
     prerequisited: [2],
   },
-  {
-    id: 24,
-    name: "Проанализировать связь категориальных переменных и целевой переменной",
-    prerequisited: [23, 18],
-  },
+  // {
+  //   id: 24,
+  //   name: "Проанализировать связь категориальных переменных и целевой переменной",
+  //   prerequisited: [23, 18],
+  // },
   {
     id: 25,
     name: "Проанализировать распределение целевой переменной",
@@ -95,19 +95,19 @@ const actionsData = [
     prerequisited: [23],
     leads_to: "HAS_TRAIN_TEST_SPLIT",
   },
-  {
-    id: 27,
-    name: "Разделить выборку на обучающее и тестовое множество со стратификацией",
-    prerequisited: [25],
-    leads_to: "HAS_TRAIN_TEST_SPLIT",
-  },
+  // {
+  //   id: 27,
+  //   name: "Разделить выборку на обучающее и тестовое множество со стратификацией",
+  //   prerequisited: [25],
+  //   leads_to: "HAS_TRAIN_TEST_SPLIT",
+  // },
   { id: 28, name: "Выбор семейства моделей", prerequisited: [23] },
-  {
-    id: 29,
-    name: "Обучить модель",
-    prerequisited: [28],
-    leads_to: "HAS_TRAINED_MODEL",
-  },
+  // {
+  //   id: 29,
+  //   name: "Обучить модель",
+  //   prerequisited: [28],
+  //   leads_to: "HAS_TRAINED_MODEL",
+  // },
   {
     id: 30,
     name: "Обучить модель с настройкой гиперпараметров",
@@ -150,19 +150,19 @@ const actionsData = [
     name: "Другое",
     prerequisited: [0],
   },
-  {
-    id: 48,
-    name: "Скачать файл с данными для закрытого тестирования",
-    prerequisited: [],
-  },
-  {
-    id: 49,
-    name: "Подготовить данные для закрытого тестирования",
-    prerequisited: [48],
-  },
-  {
-    id: 50,
-    name: "Сделать прогноз для закрытого тестирования",
-    prerequisited: [48, "HAS_TRAINED_MODEL"],
-  },
+  // {
+  //   id: 48,
+  //   name: "Скачать файл с данными для закрытого тестирования",
+  //   prerequisited: [],
+  // },
+  // {
+  //   id: 49,
+  //   name: "Подготовить данные для закрытого тестирования",
+  //   prerequisited: [48],
+  // },
+  // {
+  //   id: 50,
+  //   name: "Сделать прогноз для закрытого тестирования",
+  //   prerequisited: [48, "HAS_TRAINED_MODEL"],
+  // },
 ];
