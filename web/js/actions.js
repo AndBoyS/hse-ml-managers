@@ -1,0 +1,168 @@
+const actionsData = [
+  { id: 0, name: "Скачать файл с данными для обучения", prerequisited: [] },
+  { id: 1, name: "Открыть файл в Excel", prerequisited: [0] },
+  { id: 2, name: "Загрузить данные в Pandas", prerequisited: [0] },
+  { id: 3, name: "Посмотреть описание столбцов", prerequisited: [2] },
+  { id: 4, name: "Удалить столбец", prerequisited: [2] },
+  { id: 5, name: "Добавить новый признак", prerequisited: [2] },
+  {
+    id: 6,
+    name: "Вывести на экран название и типы столбцов",
+    prerequisited: [2],
+  },
+  {
+    id: 7,
+    name: "Проанализировать наличие аномалий",
+    prerequisited: [2],
+  },
+  { id: 8, name: "Заменить аномальные значения", prerequisited: [7] },
+  { id: 9, name: "Удалить строки с аномалиями", prerequisited: [7] },
+  {
+    id: 10,
+    name: "Проанализировать пропуски в столбцах",
+    prerequisited: [2],
+  },
+  { id: 11, name: "Выделить числовые признаки", prerequisited: [2] },
+  {
+    id: 12,
+    name: "Заполнить пропуски в числовых столбцах средним",
+    prerequisited: [10, 11],
+  },
+  {
+    id: 13,
+    name: "Построить гистограммы для числовых столбцов",
+    prerequisited: [11],
+  },
+  {
+    id: 14,
+    name: "Построить корреляционную матрицу для числовых столбцов",
+    prerequisited: [11],
+  },
+  {
+    id: 15,
+    name: "Нормализовать числовые признаки",
+    prerequisited: [11],
+  },
+  {
+    id: 16,
+    name: "Заполнить пропуски в числовых столбцах медианой",
+    prerequisited: [10, 11],
+  },
+  { id: 17, name: "Заполнить пропуски константой", prerequisited: [10] },
+  {
+    id: 18,
+    name: "Выделить категориальные признаки",
+    prerequisited: [2],
+  },
+  {
+    id: 19,
+    name: "Закодировать категориальные признаки при помощи label encoding",
+    prerequisited: [18],
+  },
+  {
+    id: 20,
+    name: "Проанализировать уникальные значения в категориальных столбцах",
+    prerequisited: [18],
+  },
+  {
+    id: 21,
+    name: "Заполнить пропуски в категориальных столбцах модой",
+    prerequisited: [18],
+  },
+  {
+    id: 22,
+    name: "Закодировать категориальные признаки при помощи one hot encoding",
+    prerequisited: [18],
+  },
+  {
+    id: 23,
+    name: "Разделить предикторы и целевую переменную",
+    prerequisited: [2],
+  },
+  {
+    id: 24,
+    name: "Проанализировать связь категориальных переменных и целевой переменной",
+    prerequisited: [23, 18],
+  },
+  {
+    id: 25,
+    name: "Проанализировать распределение целевой переменной",
+    prerequisited: [23],
+  },
+  {
+    id: 26,
+    name: "Разделить выборку на обучающее и тестовое множество",
+    prerequisited: [23],
+    leads_to: "HAS_TRAIN_TEST_SPLIT",
+  },
+  {
+    id: 27,
+    name: "Разделить выборку на обучающее и тестовое множество со стратификацией",
+    prerequisited: [25],
+    leads_to: "HAS_TRAIN_TEST_SPLIT",
+  },
+  { id: 28, name: "Выбор семейства моделей", prerequisited: [23] },
+  {
+    id: 29,
+    name: "Обучить модель",
+    prerequisited: [28],
+    leads_to: "HAS_TRAINED_MODEL",
+  },
+  {
+    id: 30,
+    name: "Обучить модель с настройкой гиперпараметров",
+    prerequisited: [28],
+    leads_to: "HAS_TRAINED_MODEL",
+  },
+  {
+    id: 31,
+    name: "Обучить модель с кросс-валидацией",
+    prerequisited: [28],
+    leads_to: "HAS_TRAINED_MODEL",
+  },
+  {
+    id: 32,
+    name: "Построить отчет о классификации",
+    prerequisited: ["HAS_TRAINED_MODEL"],
+  },
+  {
+    id: 33,
+    name: "Построить отчет о классификации на тестовом множестве",
+    prerequisited: ["HAS_TRAINED_MODEL", "HAS_TRAIN_TEST_SPLIT"],
+  },
+  {
+    id: 34,
+    name: "Спроектировать бизнес-метрику для оценки модели",
+    prerequisited: [2],
+  },
+  {
+    id: 35,
+    name: "Рассчитать бизнес-метрику",
+    prerequisited: [34, "HAS_TRAINED_MODEL"],
+  },
+  {
+    id: 46,
+    name: "Рассчитать бизнес-метрику для тестового множества",
+    prerequisited: [34, "HAS_TRAINED_MODEL", "HAS_TRAIN_TEST_SPLIT"],
+  },
+  {
+    id: 47,
+    name: "Другое",
+    prerequisited: [0],
+  },
+  {
+    id: 48,
+    name: "Скачать файл с данными для закрытого тестирования",
+    prerequisited: [],
+  },
+  {
+    id: 49,
+    name: "Подготовить данные для закрытого тестирования",
+    prerequisited: [48],
+  },
+  {
+    id: 50,
+    name: "Сделать прогноз для закрытого тестирования",
+    prerequisited: [48, "HAS_TRAINED_MODEL"],
+  },
+];
