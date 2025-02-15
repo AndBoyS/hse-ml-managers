@@ -33,14 +33,6 @@ def plot_scatter(data: pd.DataFrame, cols: list[str]) -> None:
 
 def plot_nan(data: pd.DataFrame) -> None:
     msno.matrix(data)
-    # plt.title("Визуализация пропущенных значений")
-    # plt.show()
-    # msno.bar(data)
-    # plt.title("Распределение пропущенных значений")
-    # plt.show()
-    msno.heatmap(data, vmin=-0.1, vmax=0.1)
-    plt.title("Корреляции между пропущенными значениями")
-    plt.show()
 
 
 def print_value_counts(data: pd.DataFrame, cols: Iterable[str]) -> None:

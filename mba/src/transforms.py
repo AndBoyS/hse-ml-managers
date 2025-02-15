@@ -25,22 +25,22 @@ def ngram_frequencies(text: str, n: int) -> pd.Series:
     return n_gram_freq
 
 
-def remove_anomalies(data: pd.DataFrame, cols: list[str], thresh: int = 3) -> pd.DataFrame:
+def remove_anomalies(data: pd.DataFrame, num_stds: float = 3) -> pd.DataFrame:
     data = data.copy()
-    for col in cols:
+    for col in data.columns:
         scores = scipy.stats.zscore(data[col], nan_policy="omit")
-        data = data[np.abs(scores) < thresh]
+        data = data[np.abs(scores) < num_stds]
 
     return data
 
 
-def clip_anomalies(data: pd.DataFrame, cols: list[str], thresh: int = 3) -> pd.DataFrame:
+def clip_anomalies(data: pd.DataFrame, num_stds: float = 3) -> pd.DataFrame:
     data = data.copy()
-    for col in cols:
+    for col in data.columns:
         mean = data[col].mean()
         std = data[col].std()
-        lower_val = mean - std * thresh
-        upper_val = mean + std * thresh
+        lower_val = mean - std * num_stds
+        upper_val = mean + std * num_stds
 
         data[col] = data[col].clip(lower_val, upper_val)
 
@@ -51,6 +51,7 @@ class PandasTransformer(BaseEstimator, TransformerMixin):
     def __init__(self, transformer: BaseEstimator, col_names: list[str] | None = None) -> None:
         self.transformer = transformer
         self.col_names = col_names
+        self._col_names: list[str] | None = None
 
     def fit(self, X: pd.DataFrame, y: pd.Series | None = None) -> Self:
         self._col_names = self.col_names
@@ -60,6 +61,8 @@ class PandasTransformer(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, X: pd.DataFrame, y: pd.Series | None = None) -> pd.DataFrame:
+        if self._col_names is None:
+            raise ValueError("Pipe wasn't fitted")
         X = X.copy()
         X[self._col_names] = self.transformer.transform(X[self._col_names])
         return X
