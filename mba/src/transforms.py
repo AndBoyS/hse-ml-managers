@@ -65,23 +65,6 @@ class PandasTransformer(BaseEstimator, TransformerMixin):
         return X
 
 
-class ReorderColumnTransformer(BaseEstimator, TransformerMixin):
-    def __init__(self, column_transformer):
-        self.column_transformer = column_transformer
-
-    def fit(self, X, y=None):
-        return self
-
-    def transform(self, X, y=None):
-        slices = self.column_transformer.output_indices_.values()
-        n_cols = self.column_transformer.n_features_in_
-        order_after_column_transform = [value for slice_ in slices for value in range(n_cols)[slice_]]
-
-        order_inverse = np.zeros(n_cols, dtype=int)
-        order_inverse[order_after_column_transform] = np.arange(n_cols)
-        return X[:, order_inverse]
-
-
 class DataFramer(BaseEstimator, TransformerMixin):
     def __init__(self, features: Iterable[str]) -> None:
         self.features = list(features)
