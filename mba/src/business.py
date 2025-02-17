@@ -21,7 +21,7 @@ def calculate_interest(start: arr, num_periods: arr, rate: float) -> arr:
     array - total interest income for each loan
     """
     # Monthly rate
-    monthly_rate = NUM_MONTHS / 12
+    monthly_rate = rate / 12
 
     # Calculate monthly payment using annuity formula
     monthly_payment = (
