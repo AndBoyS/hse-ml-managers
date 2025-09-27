@@ -2,32 +2,27 @@
 line-length = 120
 
 [tool.mypy]
-strict = true
-disallow_untyped_calls = false
+allow_redefinition = true
 disallow_any_generics = false
 disallow_subclassing_any = false
-allow_redefinition = true
+disallow_untyped_calls = false
 no_implicit_reexport = false
+strict = true
 
 [[tool.mypy.overrides]]
+ignore_missing_imports = true
 module = [
-    "sklearn.*",
+    "catboost.*",
+    "joblib.*",
+    "missingno.*",
+    "nltk.*",
     "scipy.*",
     "seaborn.*",
-    "catboost.*",
-    "missingno.*",
+    "sklearn.*",
     "transformers.*",
-    "nltk.*",
-    "joblib.*",
 ]
-ignore_missing_imports = true
 
 [project]
-name = "hse-ml-managers"
-version = "0.1.0"
-description = "Add your description here"
-readme = "README.md"
-requires-python = "~=3.11"
 dependencies = [
     "catboost>=1.2.7",
     "gigachat>=0.1.36",
@@ -37,8 +32,8 @@ dependencies = [
     "mypy>=1.13.0",
     "nltk>=3.9.1",
     "openpyxl>=3.1.5",
-    "pandas>=2.2.3",
     "pandas-stubs>=2.2.3.241009",
+    "pandas>=2.2.3",
     "ruff>=0.7.4",
     "scikit-learn>=1.5.2",
     "seaborn>=0.13.2",
@@ -47,10 +42,15 @@ dependencies = [
     "types-requests>=2.32.0.20241016",
     "types-tqdm>=4.67.0.20241119",
 ]
+description = "Add your description here"
+name = "hse-ml-managers"
+readme = "README.md"
+requires-python = "~=3.11.0"
+version = "0.1.0"
 
 [build-system]
-requires = ["hatchling"]
 build-backend = "hatchling.build"
+requires = ["hatchling"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["mba/src"]
