@@ -6,6 +6,7 @@ allow_redefinition = true
 disallow_any_generics = false
 disallow_subclassing_any = false
 disallow_untyped_calls = false
+follow_untyped_imports = true
 no_implicit_reexport = false
 strict = true
 
