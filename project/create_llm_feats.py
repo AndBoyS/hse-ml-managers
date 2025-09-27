@@ -217,7 +217,7 @@ def preprocess() -> pd.DataFrame:
     return df
 
 
-def map_floats_to_words(x: pd.Series, quantile_mapping: dict[float, str]) -> pd.Series:  # type: ignore[type-arg]
+def map_floats_to_words(x: pd.Series, quantile_mapping: dict[float, str]) -> pd.Series:
     def map_quantile(value: float, threshs: Iterable[float], names: Iterable[str]) -> str | float:
         if np.isnan(value):
             return value
@@ -321,7 +321,7 @@ def main() -> None:
     df_target.to_csv(OUTPUT_TEST_TARGETS)
 
     submit = df_target["дефолт"].copy()
-    submit[:] = np.random.randint(0, 2, size=submit.shape[0])  # type: ignore[call-overload]
+    submit[:] = np.random.randint(0, 2, size=submit.shape[0])
     submit.to_csv(OUTPUT_SUBMIT_EXAMPLE)
 
 

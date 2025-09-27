@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from sklearn.metrics import f1_score
+from sklearn.metrics import f1_score, precision_score, recall_score
 from sklearn.model_selection import train_test_split
 
 from .const import TARGET
@@ -17,7 +17,10 @@ def get_train_test(data: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
 
 def print_metrics(y_true: np.ndarray | pd.Series, y_pred: np.ndarray | pd.Series) -> None:
     acc = (y_pred == y_true).mean()
-    print("Log reg")
     print(f"Accuracy: {acc:.3f}")
+    pr = precision_score(y_pred=y_pred, y_true=y_true)
+    print(f"Precision: {pr:.3f}")
+    rec = recall_score(y_pred=y_pred, y_true=y_true)
+    print(f"Recall: {rec:.3f}")
     f1 = f1_score(y_pred=y_pred, y_true=y_true)
     print(f"f1: {f1:.3f}")

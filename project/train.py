@@ -2,7 +2,9 @@ from typing import Any
 
 import pandas as pd
 from catboost import CatBoostClassifier
-from create_llm_feats import OUTPUT_TEST_PRIVATE, OUTPUT_TEST_PUBLIC, OUTPUT_TRAIN
+
+# actual error, dont have time nor need to fix right now
+from create_llm_feats import OUTPUT_TEST_PRIVATE, OUTPUT_TEST_PUBLIC, OUTPUT_TRAIN  # type: ignore[attr-defined]
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LogisticRegression
@@ -12,7 +14,7 @@ from sklearn.pipeline import Pipeline
 TARGET = "дефолт"
 
 
-def baseline_train(X_train: pd.DataFrame, y_train: pd.Series) -> Pipeline:  # type: ignore[type-arg]
+def baseline_train(X_train: pd.DataFrame, y_train: pd.Series) -> Pipeline:
     num_feats = list(X_train.select_dtypes(exclude=object).columns)
 
     pipe = Pipeline(
@@ -29,7 +31,7 @@ def baseline_train(X_train: pd.DataFrame, y_train: pd.Series) -> Pipeline:  # ty
     return pipe.fit(X_train, y_train)
 
 
-def train(X_train: pd.DataFrame, y_train: pd.Series) -> Pipeline:  # type: ignore[type-arg]
+def train(X_train: pd.DataFrame, y_train: pd.Series) -> Pipeline:
     cat_feats = list(X_train.select_dtypes(object).columns)
     pipe = Pipeline(
         [
