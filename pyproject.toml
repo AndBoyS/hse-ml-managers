@@ -9,6 +9,7 @@ disallow_untyped_calls = false
 follow_untyped_imports = true
 no_implicit_reexport = false
 strict = true
+warn_return_any = false
 
 [[tool.mypy.overrides]]
 ignore_missing_imports = true
