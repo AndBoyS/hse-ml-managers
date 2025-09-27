@@ -8,7 +8,8 @@ import pandas as pd
 import scipy
 import scipy.stats
 from nltk import ngrams
-from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.base import BaseEstimator, TransformerMixin, check_is_fitted
+from sklearn.exceptions import NotFittedError
 
 
 def ngram_frequencies(text: str, n: int) -> pd.Series:
@@ -48,24 +49,33 @@ def clip_anomalies(data: pd.DataFrame, num_stds: float = 3) -> pd.DataFrame:
 
 
 class PandasTransformer(BaseEstimator, TransformerMixin):
-    def __init__(self, transformer: BaseEstimator, col_names: list[str] | None = None) -> None:
+    """Обертка над sklearn трансформерами, будет принимать пандас датафремы и возвращать их + можно указать, на каких столбцах делать трансформ"""
+
+    def __init__(self, transformer: TransformerMixin, col_names: list[str] | None = None) -> None:
         self.transformer = transformer
         self.col_names = col_names
-        self._col_names: list[str] | None = None
 
     def fit(self, X: pd.DataFrame, y: pd.Series | None = None) -> Self:
-        self._col_names = self.col_names
         if self.col_names is None:
-            self._col_names = list(X.columns)
-        self.transformer.fit(X[self._col_names])
+            self.col_names = list(X.columns)
+        self.transformer.fit(X[self.col_names])  # type: ignore[attr-defined]
         return self
 
     def transform(self, X: pd.DataFrame, y: pd.Series | None = None) -> pd.DataFrame:
-        if self._col_names is None:
+        if self.col_names is None:
             raise ValueError("Pipe wasn't fitted")
         X = X.copy()
-        X[self._col_names] = self.transformer.transform(X[self._col_names])
+        dtypes = X[self.col_names].dtypes
+        X[self.col_names] = self.transformer.transform(X[self.col_names])  # type: ignore[attr-defined]
+        X[self.col_names] = X[self.col_names].astype(dtypes)
         return X
+
+    def __sklearn_is_fitted__(self) -> bool:
+        try:
+            check_is_fitted(self.transformer)
+        except NotFittedError:
+            return False
+        return True
 
 
 class DataFramer(BaseEstimator, TransformerMixin):
