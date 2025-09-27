@@ -2,14 +2,14 @@ from typing import Any
 
 import pandas as pd
 from catboost import CatBoostClassifier
-
-# actual error, dont have time nor need to fix right now
-from create_llm_feats import OUTPUT_TEST_PRIVATE, OUTPUT_TEST_PUBLIC, OUTPUT_TRAIN  # type: ignore[attr-defined]
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import f1_score
 from sklearn.pipeline import Pipeline
+
+# actual error, dont have time nor need to fix right now
+from project.create_dataset import OUTPUT_TEST_PRIVATE, OUTPUT_TEST_PUBLIC, OUTPUT_TRAIN  # type: ignore[attr-defined]
 
 TARGET = "дефолт"
 
