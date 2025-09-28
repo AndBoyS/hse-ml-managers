@@ -14,6 +14,8 @@ def main() -> None:
     DATA_DIR.mkdir(exist_ok=True)
     remove_some_collateral(input_path=DATA_PRE_EDIT_DIR / "loan_data.csv", output_path=TRAIN_DATA_PATH)
     remove_some_collateral(input_path=DATA_PRE_EDIT_DIR / "test_data.csv", output_path=TEST_DATA_PATH)
+    little_changes(input_path=DATA_PRE_EDIT_DIR / "loan_data.csv", output_path=TRAIN_DATA_PATH)
+    little_changes(input_path=DATA_PRE_EDIT_DIR / "test_data.csv", output_path=TEST_DATA_PATH)
     # For convenience of students
     data = pd.read_csv(TRAIN_DATA_PATH)
     data.to_excel(TRAIN_DATA_XLSX_PATH)
@@ -33,6 +35,12 @@ def remove_some_collateral(input_path: Path, output_path: Path) -> None:
     non_collateral_mask = rng.choice(size, replace=False, size=int(size * NON_COLLATERAL_RATE))
     data.loc[non_collateral_mask, "прямой_залог"] = 0
     data.loc[non_collateral_mask, "тип_залога"] = np.nan
+    data.to_csv(output_path, index=False)
+
+
+def little_changes(input_path: Path, output_path: Path) -> None:
+    data = pd.read_csv(input_path)
+    data["срок"] = data["срок"].round()
     data.to_csv(output_path, index=False)
 
 
