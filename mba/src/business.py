@@ -33,16 +33,22 @@ def calculate_interest(start: arr, num_periods: arr, rate: float) -> arr:
     return total_paid - start
 
 
-def profit(y_true: arr, y_pred: arr, feats: pd.DataFrame) -> float:
+def calculate_profit(y_true: arr, y_pred: arr, feats: pd.DataFrame) -> float:
     feats = feats.copy()
     success_mask = (y_true == 0) & (y_pred == 0)
-    start_sum = feats[success_mask.to_list()]["сумма"].fillna(0)
-    num_periods = feats[success_mask.to_list()]["срок"].fillna(365) // 30
-    profit = calculate_interest(start=start_sum, num_periods=num_periods, rate=RATE).sum()
-
     failure_mask = (y_true == 1) & (y_pred == 0)
 
-    loss = feats[failure_mask.to_list()]["сумма"].fillna(0)
-    loss -= feats[failure_mask.to_list()]["стоимость_имущества"].fillna(0)
-    profit -= loss.sum()
+    start_sums = feats["сумма"].fillna(0)
+    num_periods = feats["срок"].fillna(0)
+    potential_profits = calculate_interest(start=start_sums, num_periods=num_periods, rate=RATE)
+
+    profit = potential_profits[success_mask].sum()
+
+    losses = start_sums[failure_mask]
+    collateral = feats["стоимость_имущества"].fillna(0)
+    collateral[feats["прямой_залог"] != 1] = 0
+    losses -= collateral[failure_mask]
+    losses = losses.clip(lower=0)
+
+    profit -= losses.sum()
     return cast(float, profit)
