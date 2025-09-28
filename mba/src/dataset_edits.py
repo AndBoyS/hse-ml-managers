@@ -12,11 +12,13 @@ NON_COLLATERAL_RATE = 0.3
 
 def main() -> None:
     DATA_DIR.mkdir(exist_ok=True)
-    edit_data(input_path=DATA_PRE_EDIT_DIR / "loan_data.csv", output_path=TRAIN_DATA_PATH)
-    edit_data(input_path=DATA_PRE_EDIT_DIR / "test_data.csv", output_path=TEST_DATA_PATH)
+    remove_some_collateral(input_path=DATA_PRE_EDIT_DIR / "loan_data.csv", output_path=TRAIN_DATA_PATH)
+    remove_some_collateral(input_path=DATA_PRE_EDIT_DIR / "test_data.csv", output_path=TEST_DATA_PATH)
     # For convenience of students
     data = pd.read_csv(TRAIN_DATA_PATH)
     data.to_excel(TRAIN_DATA_XLSX_PATH)
+
+    # Remove some non-defaults from test
     data = pd.read_csv(TEST_DATA_PATH)
     non_default_data = data[data["дефолт"] != 1]
     default_data = data[data["дефолт"].fillna(0) == 1]
@@ -24,7 +26,7 @@ def main() -> None:
     data.to_csv(TEST_DATA_PATH, index=False)
 
 
-def edit_data(input_path: Path, output_path: Path) -> None:
+def remove_some_collateral(input_path: Path, output_path: Path) -> None:
     data = pd.read_csv(input_path)
     rng = np.random.default_rng(42)
     size = data.shape[0]
