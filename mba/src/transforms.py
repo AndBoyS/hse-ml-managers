@@ -10,6 +10,7 @@ import scipy.stats
 from nltk import ngrams
 from sklearn.base import BaseEstimator, TransformerMixin, check_is_fitted
 from sklearn.exceptions import NotFittedError
+from sklearn.preprocessing import OneHotEncoder as OneHotEncoderSklearn
 
 
 def ngram_frequencies(text: str, n: int) -> pd.Series:
@@ -76,6 +77,32 @@ class PandasTransformer(BaseEstimator, TransformerMixin):
         except NotFittedError:
             return False
         return True
+
+
+class OneHotEncoder(BaseEstimator, TransformerMixin):
+    ohe_cols_: list[str] | None = None
+
+    def __init__(self, col_names: list[str] | None = None) -> None:
+        self.col_names = col_names
+        self.encoder_ = OneHotEncoderSklearn()
+
+    def fit(self, X: pd.DataFrame, y: pd.Series | None = None) -> Self:
+        if self.col_names is None:
+            self.col_names = list(X.columns)
+        self.encoder_.fit(X[self.col_names])
+        self.ohe_cols: list[str] = []
+        for col_name, col_cats in zip(self.col_names, self.encoder_.categories_):
+            self.ohe_cols.extend(f"{col_name}_{v}" for v in col_cats)
+        return self
+
+    def transform(self, X: pd.DataFrame, y: pd.Series | None = None) -> pd.DataFrame:
+        X = X.copy()
+        if self.col_names is None:
+            raise ValueError("Pipe wasn't fitted")
+        res_np = self.encoder_.transform(X[self.col_names]).toarray()
+
+        X[self.ohe_cols] = res_np
+        return X
 
 
 class DataFramer(BaseEstimator, TransformerMixin):
