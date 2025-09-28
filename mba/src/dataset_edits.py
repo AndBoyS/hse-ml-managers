@@ -17,6 +17,11 @@ def main() -> None:
     # For convenience of students
     data = pd.read_csv(TRAIN_DATA_PATH)
     data.to_excel(TRAIN_DATA_XLSX_PATH)
+    data = pd.read_csv(TEST_DATA_PATH)
+    non_default_data = data[data["дефолт"] != 1]
+    default_data = data[data["дефолт"].fillna(0) == 1]
+    data = pd.concat([default_data, non_default_data.sample(frac=0.3, random_state=52)])
+    data.to_csv(TEST_DATA_PATH, index=False)
 
 
 def edit_data(input_path: Path, output_path: Path) -> None:
