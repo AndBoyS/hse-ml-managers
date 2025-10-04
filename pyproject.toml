@@ -27,7 +27,6 @@ module = [
 [project]
 dependencies = [
     "catboost>=1.2.7",
-    "gigachat>=0.1.36",
     "jupyter>=1.1.1",
     "matplotlib>=3.9.2",
     "missingno>=0.5.2",
@@ -40,7 +39,6 @@ dependencies = [
     "scikit-learn>=1.5.2",
     "seaborn>=0.13.2",
     "tqdm>=4.67.1",
-    "transformers>=4.46.3",
     "types-requests>=2.32.0.20241016",
     "types-tqdm>=4.67.0.20241119",
 ]
