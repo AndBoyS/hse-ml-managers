@@ -27,6 +27,7 @@ OUTPUT_SUBMIT_EXAMPLE = KAGGLE_DIR / "submission_example.csv"
 CACHE_PATH_ESSAY = DATA_DIR / "llm_essay_feats.pkl"
 SYNONYMS_PATH = DATA_DIR / "word_synonyms.json"
 MAX_REQUEST_TRIES = 10
+NON_COLLATERAL_RATE = 0.3
 
 PROMPT_TEMPLATE_ESSAY = """You will be given a list of bank clients' data with different attributes.
 For each client, write a 50-word text from client's point of view, as if he is introducing himself to a bank employee.
@@ -298,6 +299,23 @@ def add_essays_to_df(df: pd.DataFrame, cache: Cache) -> None:
         df.loc[i, essay_col] = line
 
 
+def remove_some_collateral(data: pd.DataFrame) -> pd.DataFrame:
+    data = data.copy()
+    rng = np.random.default_rng(42)
+    size = data.shape[0]
+    non_collateral_mask = rng.choice(size, replace=False, size=int(size * NON_COLLATERAL_RATE))
+    index = data.index[non_collateral_mask]
+    data.loc[index, "прямой_залог"] = 0  # type: ignore[index]
+    data.loc[index, "тип_залога"] = np.nan  # type: ignore[index]
+    return data
+
+
+def remove_some_non_defaults(data: pd.DataFrame) -> pd.DataFrame:
+    non_default_data = data[data["дефолт"] != 1]
+    default_data = data[data["дефолт"].fillna(0) == 1]
+    return pd.concat([default_data, non_default_data.sample(frac=0.6, random_state=52)])
+
+
 def main() -> None:
     df = preprocess()
     cache = Cache(CACHE_PATH_ESSAY)
@@ -305,9 +323,14 @@ def main() -> None:
     add_essays_to_df(df=df, cache=cache)
     df = rename_cols(df)
     df = drop_cols(df)
+    df["срок"] = df["срок"].round()
+    df = remove_some_collateral(df)
+    df = remove_some_non_defaults(df)
 
-    df_train, df_test = train_test_split(df, test_size=0.2, random_state=42)
-    df_test_public, df_test_private = train_test_split(df_test, test_size=0.5, random_state=42)
+    df_train, df_test = train_test_split(df, test_size=0.2, random_state=42, stratify=df["дефолт"])
+    df_test_public, df_test_private = train_test_split(
+        df_test, test_size=0.5, random_state=42, stratify=df_test["дефолт"]
+    )
 
     OUTPUT_TRAIN.parent.mkdir(exist_ok=True)
     df_train.to_csv(OUTPUT_TRAIN)
@@ -321,7 +344,9 @@ def main() -> None:
     df_target.to_csv(OUTPUT_TEST_TARGETS)
 
     submit = df_target["дефолт"].copy()
-    submit[:] = np.random.randint(0, 2, size=submit.shape[0])
+    rng = np.random.default_rng(seed=42)
+
+    submit[:] = rng.integers(0, 2, size=submit.shape[0])
     submit.to_csv(OUTPUT_SUBMIT_EXAMPLE)
 
 
