@@ -3,3 +3,4 @@
 .DS_Store
 **/output/pred.pkl
 **/lightning_logs
+.env
